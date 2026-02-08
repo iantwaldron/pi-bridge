@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e
 
-WIFI_CHIPSET="${WIFI_CHIPSET:-intel}"
+source "$(dirname "$0")/defaults.sh"
+
+WIFI_CHIPSET="${WIFI_CHIPSET:-$DEFAULT_WIFI_CHIPSET}"
 
 echo "Installing required packages..."
 sudo apt update

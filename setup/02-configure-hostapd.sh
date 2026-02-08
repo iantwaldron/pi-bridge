@@ -1,9 +1,11 @@
 #!/bin/bash
 set -e
 
-AP_INTERFACE="${AP_INTERFACE:-wlan1}"
-AP_SSID="${AP_SSID:-PiNet}"
-AP_COUNTRY="${AP_COUNTRY:-US}"
+source "$(dirname "$0")/defaults.sh"
+
+AP_INTERFACE="${AP_INTERFACE:-$DEFAULT_AP_INTERFACE}"
+AP_SSID="${AP_SSID:-$DEFAULT_AP_SSID}"
+AP_COUNTRY="${AP_COUNTRY:-$DEFAULT_AP_COUNTRY}"
 
 read -r AP_PASSPHRASE
 
