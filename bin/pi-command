@@ -16,6 +16,12 @@ def main():
 Commands:
   setup         Configure the Pi as a wireless access point
   update-creds  Update AP SSID and/or passphrase
+  status        Show AP status and connected clients
+  restart       Restart all AP services
+  start         Start the AP
+  stop          Stop the AP
+  clients       List connected clients
+  logs          View service logs (hostapd, dnsmasq)
 """
     )
     parser.add_argument("command", nargs="?", help="Command to run")
@@ -34,6 +40,25 @@ Commands:
     elif args.command == "update-creds":
         from update_creds import main as update_creds_main
         update_creds_main()
+    elif args.command == "status":
+        from status import main as status_main
+        status_main()
+    elif args.command == "restart":
+        from restart import main as restart_main
+        restart_main()
+    elif args.command == "start":
+        from ap_control import start_ap
+        start_ap()
+    elif args.command == "stop":
+        from ap_control import stop_ap
+        stop_ap()
+    elif args.command == "clients":
+        from clients import main as clients_main
+        clients_main()
+    elif args.command == "logs":
+        from logs import main as logs_main
+        sys.argv = ["pi-command logs"] + remaining
+        logs_main()
     elif args.command is None:
         parser.print_help()
     else:
