@@ -100,13 +100,13 @@ def configure_network_manager(interface: str):
     run_script("04-configure-network-manager.sh", env=env)
 
 
-def enable_ip_forwarding(ap_interface: str, wan_interface: str):
-    """Run 05-enable-ip-forwarding.sh"""
+def setup_nat(ap_interface: str, wan_interface: str):
+    """Run 05-setup-nat.sh"""
     import os
     env = os.environ.copy()
     env["AP_INTERFACE"] = ap_interface
     env["WAN_INTERFACE"] = wan_interface
-    run_script("05-enable-ip-forwarding.sh", env=env)
+    run_script("05-setup-nat.sh", env=env)
 
 
 def main():
@@ -149,7 +149,7 @@ def main():
     configure_hostapd(interface, ssid, country, passphrase)
     configure_dnsmasq(interface, gateway)
     configure_network_manager(interface)
-    enable_ip_forwarding(interface, wan_interface)
+    setup_nat(interface, wan_interface)
 
     print("\n=== Setup complete ===")
 
