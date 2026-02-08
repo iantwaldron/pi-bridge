@@ -6,6 +6,21 @@ from pathlib import Path
 SETUP_DIR = Path(__file__).parent.parent / "setup"
 
 
+def load_defaults() -> dict[str, str]:
+    """Parse defaults.sh and return as dict."""
+    defaults = {}
+    defaults_file = SETUP_DIR / "defaults.sh"
+    for line in defaults_file.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            key, value = line.split("=", 1)
+            defaults[key] = value.strip('"')
+    return defaults
+
+
+DEFAULTS = load_defaults()
+
+
 def run_script(script_name: str, env: dict | None = None, stdin: str | None = None):
     """Run a setup script with optional env vars and stdin."""
     script_path = SETUP_DIR / script_name
@@ -68,27 +83,42 @@ def configure_hostapd(interface: str, ssid: str, country: str, passphrase: str):
     run_script("02-configure-hostapd.sh", env=env, stdin=passphrase)
 
 
+def configure_dnsmasq(interface: str, gateway: str):
+    """Run 03-configure-dnsmasq.sh"""
+    import os
+    env = os.environ.copy()
+    env["AP_INTERFACE"] = interface
+    env["AP_GATEWAY"] = gateway
+    run_script("03-configure-dnsmasq.sh", env=env)
+
+
 def main():
     print("=== Pi Command Setup ===")
     print("(Press Enter to accept defaults shown in brackets)\n")
 
     # Gather all config via prompts
-    chipset = prompt_choice("WiFi chipset", ["intel", "realtek"], default="intel")
-    interface = prompt("AP interface", default="wlan1")
-    ssid = prompt("Network SSID", default="PiNet")
+    chipset = prompt_choice("WiFi chipset", ["intel", "realtek"], default=DEFAULTS["DEFAULT_WIFI_CHIPSET"])
+    interface = prompt("AP interface", default=DEFAULTS["DEFAULT_AP_INTERFACE"])
+    ssid = prompt("Network SSID", default=DEFAULTS["DEFAULT_AP_SSID"])
 
-    if prompt_yes_no("Are you in the United States?", default=True):
-        country = "US"
+    if DEFAULTS["DEFAULT_AP_COUNTRY"] == "US":
+        if prompt_yes_no("Are you in the United States?", default=True):
+            country = "US"
+        else:
+            country = prompt("Country code (e.g., GB, DE, CA)").upper()
     else:
-        country = prompt("Country code (e.g., GB, DE, CA)").upper()
+        country = prompt("Country code", default=DEFAULTS["DEFAULT_AP_COUNTRY"]).upper()
 
     passphrase = getpass.getpass("AP passphrase: ")
+
+    gateway = prompt("AP gateway IP", default=DEFAULTS["DEFAULT_AP_GATEWAY"])
 
     # Confirm
     print(f"\nChipset:   {chipset}")
     print(f"Interface: {interface}")
     print(f"SSID:      {ssid}")
     print(f"Country:   {country}")
+    print(f"Gateway:   {gateway}")
     print()
 
     if not prompt_yes_no("Proceed with setup?", default=True):
@@ -98,6 +128,7 @@ def main():
     print()
     install_packages(chipset)
     configure_hostapd(interface, ssid, country, passphrase)
+    configure_dnsmasq(interface, gateway)
 
     print("\n=== Setup complete ===")
 
