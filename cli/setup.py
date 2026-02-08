@@ -126,6 +126,11 @@ def enable_services(interface: str):
     run_script("07-enable-services.sh", env=env)
 
 
+def configure_mdns():
+    """Run 08-configure-mdns.sh"""
+    run_script("08-configure-mdns.sh")
+
+
 def main():
     print("=== Pi Command Setup ===")
     print("(Press Enter to accept defaults shown in brackets)\n")
@@ -147,6 +152,7 @@ def main():
 
     gateway = prompt("AP gateway IP", default=DEFAULTS["DEFAULT_AP_GATEWAY"])
     wan_interface = prompt("WAN interface (internet uplink)", default=DEFAULTS["DEFAULT_WAN_INTERFACE"])
+    enable_mdns = prompt_yes_no("Enable mDNS reflection (device discovery across networks)?", default=False)
 
     # Confirm
     print(f"\nChipset:      {chipset}")
@@ -155,6 +161,7 @@ def main():
     print(f"SSID:         {ssid}")
     print(f"Country:      {country}")
     print(f"Gateway:      {gateway}")
+    print(f"mDNS:         {'enabled' if enable_mdns else 'disabled'}")
     print()
 
     if not prompt_yes_no("Proceed with setup?", default=True):
@@ -169,6 +176,8 @@ def main():
     setup_nat(interface, wan_interface)
     setup_service(interface, gateway)
     enable_services(interface)
+    if enable_mdns:
+        configure_mdns()
 
     print("\n=== Setup complete ===")
 
