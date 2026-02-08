@@ -118,6 +118,14 @@ def setup_service(interface: str, gateway: str):
     run_script("06-setup-service.sh", env=env)
 
 
+def enable_services(interface: str):
+    """Run 07-enable-services.sh"""
+    import os
+    env = os.environ.copy()
+    env["AP_INTERFACE"] = interface
+    run_script("07-enable-services.sh", env=env)
+
+
 def main():
     print("=== Pi Command Setup ===")
     print("(Press Enter to accept defaults shown in brackets)\n")
@@ -160,6 +168,7 @@ def main():
     configure_network_manager(interface)
     setup_nat(interface, wan_interface)
     setup_service(interface, gateway)
+    enable_services(interface)
 
     print("\n=== Setup complete ===")
 
