@@ -3,19 +3,7 @@ import subprocess
 import re
 from pathlib import Path
 
-SETUP_DIR = Path(__file__).parent.parent / "setup"
-
-
-def load_defaults() -> dict[str, str]:
-    """Parse defaults.sh and return as dict."""
-    defaults = {}
-    defaults_file = SETUP_DIR / "defaults.sh"
-    for line in defaults_file.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            key, value = line.split("=", 1)
-            defaults[key] = value.strip('"')
-    return defaults
+from config import logger, DEFAULTS
 
 
 def get_wireless_clients(interface: str) -> list[dict]:
@@ -75,16 +63,15 @@ def get_dhcp_leases() -> dict[str, dict]:
 
 
 def main():
-    print("=== Connected Clients ===\n")
+    logger.info("=== Connected Clients ===\n")
 
-    defaults = load_defaults()
-    interface = defaults.get("DEFAULT_AP_INTERFACE", "wlan1")
+    interface = DEFAULTS.get("DEFAULT_AP_INTERFACE", "wlan1")
 
     clients = get_wireless_clients(interface)
     leases = get_dhcp_leases()
 
     if not clients:
-        print("No clients connected.")
+        logger.info("No clients connected.")
         return
 
     # Merge wireless info with DHCP info
@@ -95,16 +82,16 @@ def main():
             client["hostname"] = leases[mac]["hostname"]
 
     # Print table
-    print(f"{'MAC Address':<20} {'IP Address':<16} {'Signal':<12} {'Hostname'}")
-    print("-" * 70)
+    logger.info(f"{'MAC Address':<20} {'IP Address':<16} {'Signal':<12} {'Hostname'}")
+    logger.info("-" * 70)
     for client in clients:
         mac = client.get("mac", "")
         ip = client.get("ip", "-")
         signal = client.get("signal", "-")
         hostname = client.get("hostname", "-") or "-"
-        print(f"{mac:<20} {ip:<16} {signal:<12} {hostname}")
+        logger.info(f"{mac:<20} {ip:<16} {signal:<12} {hostname}")
 
-    print(f"\nTotal: {len(clients)} client(s)")
+    logger.info(f"\nTotal: {len(clients)} client(s)")
 
 
 if __name__ == "__main__":

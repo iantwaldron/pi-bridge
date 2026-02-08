@@ -5,6 +5,8 @@ import re
 import sys
 from pathlib import Path
 
+from config import logger
+
 HOSTAPD_CONF = Path("/etc/hostapd/hostapd.conf")
 
 
@@ -37,7 +39,7 @@ def update_config(ssid: str | None, passphrase: str | None):
         capture_output=True, text=True
     )
     if result.returncode != 0:
-        print("Error reading hostapd.conf", file=sys.stderr)
+        logger.error("Error reading hostapd.conf")
         sys.exit(1)
 
     content = result.stdout
@@ -54,16 +56,16 @@ def update_config(ssid: str | None, passphrase: str | None):
         input=content, text=True, capture_output=True
     )
     if process.returncode != 0:
-        print("Error writing hostapd.conf", file=sys.stderr)
+        logger.error("Error writing hostapd.conf")
         sys.exit(1)
 
 
 def restart_hostapd():
     """Restart hostapd service."""
-    print("Restarting hostapd...")
+    logger.info("Restarting hostapd...")
     result = subprocess.run(["sudo", "systemctl", "restart", "hostapd"])
     if result.returncode != 0:
-        print("Error restarting hostapd", file=sys.stderr)
+        logger.error("Error restarting hostapd")
         sys.exit(1)
 
 
@@ -76,39 +78,39 @@ def prompt(message: str, default: str | None = None) -> str:
 
 
 def main():
-    print("=== Update AP Credentials ===\n")
+    logger.info("=== Update AP Credentials ===\n")
 
     current = read_current_config()
     current_ssid = current.get("ssid", "")
 
-    print("Leave blank to keep current value.\n")
+    logger.info("Leave blank to keep current value.\n")
 
     new_ssid = input(f"New SSID [{current_ssid}]: ").strip()
     new_passphrase = getpass.getpass("New passphrase (blank to keep): ")
 
     if not new_ssid and not new_passphrase:
-        print("No changes specified.")
+        logger.info("No changes specified.")
         return
 
     # Confirm
-    print("\nChanges:")
+    logger.info("\nChanges:")
     if new_ssid:
-        print(f"  SSID: {current_ssid} -> {new_ssid}")
+        logger.info(f"  SSID: {current_ssid} -> {new_ssid}")
     if new_passphrase:
-        print(f"  Passphrase: (will be updated)")
-    print()
+        logger.info(f"  Passphrase: (will be updated)")
+    logger.info("")
 
     confirm = input("Apply changes? [y/N]: ").strip().lower()
     if confirm not in ("y", "yes"):
-        print("Aborted.")
+        logger.info("Aborted.")
         return
 
-    print()
+    logger.info("")
     update_config(new_ssid or None, new_passphrase or None)
-    print("Credentials updated.")
+    logger.info("Credentials updated.")
 
     restart_hostapd()
-    print("\nAP credentials updated successfully.")
+    logger.info("\nAP credentials updated successfully.")
 
 
 if __name__ == "__main__":

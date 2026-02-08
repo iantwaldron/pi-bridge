@@ -3,24 +3,8 @@ import argparse
 import subprocess
 import getpass
 import sys
-from pathlib import Path
 
-SETUP_DIR = Path(__file__).parent.parent / "setup"
-
-
-def load_defaults() -> dict[str, str]:
-    """Parse defaults.sh and return as dict."""
-    defaults = {}
-    defaults_file = SETUP_DIR / "defaults.sh"
-    for line in defaults_file.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            key, value = line.split("=", 1)
-            defaults[key] = value.strip('"')
-    return defaults
-
-
-DEFAULTS = load_defaults()
+from config import logger, DEFAULTS, SETUP_DIR
 
 
 def run_script(script_name: str, env: dict | None = None, stdin: str | None = None):
@@ -55,7 +39,7 @@ def prompt_choice(message: str, choices: list[str], default: str | None = None) 
         response = input(f"{message} ({choice_str}): ").strip().lower()
         if response in choices:
             return response
-        print(f"Please enter one of: {choice_str}")
+        logger.warning(f"Please enter one of: {choice_str}")
 
 
 def prompt_yes_no(message: str, default: bool = True) -> bool:
@@ -139,7 +123,7 @@ def main():
                         help="Use all defaults, read passphrase from stdin")
     args = parser.parse_args()
 
-    print("=== Pi Command Setup ===")
+    logger.info("=== Pi Command Setup ===")
 
     if args.use_defaults:
         # Non-interactive mode - use all defaults
@@ -152,11 +136,11 @@ def main():
         enable_mdns = False
         passphrase = sys.stdin.readline().strip()
         if not passphrase:
-            print("Error: passphrase required via stdin", file=sys.stderr)
+            logger.error("Error: passphrase required via stdin")
             sys.exit(1)
     else:
         # Interactive mode
-        print("(Press Enter to accept defaults shown in brackets)\n")
+        logger.info("(Press Enter to accept defaults shown in brackets)\n")
 
         chipset = prompt_choice("WiFi chipset", ["intel", "realtek"], default=DEFAULTS["DEFAULT_WIFI_CHIPSET"])
         interface = prompt("AP interface", default=DEFAULTS["DEFAULT_AP_INTERFACE"])
@@ -177,20 +161,20 @@ def main():
         enable_mdns = prompt_yes_no("Enable mDNS reflection (device discovery across networks)?", default=False)
 
     # Confirm
-    print(f"\nChipset:      {chipset}")
-    print(f"AP interface: {interface}")
-    print(f"WAN interface: {wan_interface}")
-    print(f"SSID:         {ssid}")
-    print(f"Country:      {country}")
-    print(f"Gateway:      {gateway}")
-    print(f"mDNS:         {'enabled' if enable_mdns else 'disabled'}")
-    print()
+    logger.info(f"\nChipset:      {chipset}")
+    logger.info(f"AP interface: {interface}")
+    logger.info(f"WAN interface: {wan_interface}")
+    logger.info(f"SSID:         {ssid}")
+    logger.info(f"Country:      {country}")
+    logger.info(f"Gateway:      {gateway}")
+    logger.info(f"mDNS:         {'enabled' if enable_mdns else 'disabled'}")
+    logger.info("")
 
     if not args.use_defaults and not prompt_yes_no("Proceed with setup?", default=True):
-        print("Aborted.")
+        logger.info("Aborted.")
         return
 
-    print()
+    logger.info("")
     install_packages(chipset)
     configure_hostapd(interface, ssid, country, passphrase)
     configure_dnsmasq(interface, gateway)
@@ -201,7 +185,7 @@ def main():
     if enable_mdns:
         configure_mdns()
 
-    print("\n=== Setup complete ===")
+    logger.info("\n=== Setup complete ===")
 
 
 if __name__ == "__main__":

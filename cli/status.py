@@ -3,6 +3,8 @@ import subprocess
 import re
 from pathlib import Path
 
+from config import logger
+
 HOSTAPD_CONF = Path("/etc/hostapd/hostapd.conf")
 
 
@@ -58,41 +60,41 @@ def get_connected_clients(interface: str) -> int:
 
 
 def main():
-    print("=== Pi Command Status ===\n")
+    logger.info("=== Pi Command Status ===\n")
 
     # Services
-    print("Services:")
+    logger.info("Services:")
     services = ["hostapd", "dnsmasq", "NetworkManager"]
     for service in services:
         active, status = get_service_status(service)
         icon = "●" if active else "○"
-        print(f"  {icon} {service}: {status}")
+        logger.info(f"  {icon} {service}: {status}")
 
     # Check for interface-specific static IP service
     interface = get_config_value("interface") or "wlan1"
     static_service = f"{interface}-static-ip"
     active, status = get_service_status(static_service)
     icon = "●" if active else "○"
-    print(f"  {icon} {static_service}: {status}")
+    logger.info(f"  {icon} {static_service}: {status}")
 
-    print()
+    logger.info("")
 
     # AP Config
-    print("AP Configuration:")
+    logger.info("AP Configuration:")
     ssid = get_config_value("ssid")
     country = get_config_value("country_code")
-    print(f"  SSID:     {ssid or 'unknown'}")
-    print(f"  Country:  {country or 'unknown'}")
+    logger.info(f"  SSID:     {ssid or 'unknown'}")
+    logger.info(f"  Country:  {country or 'unknown'}")
 
     ip = get_interface_ip(interface)
-    print(f"  Interface: {interface}")
-    print(f"  IP:        {ip or 'not assigned'}")
+    logger.info(f"  Interface: {interface}")
+    logger.info(f"  IP:        {ip or 'not assigned'}")
 
-    print()
+    logger.info("")
 
     # Clients
     client_count = get_connected_clients(interface)
-    print(f"Connected Clients: {client_count}")
+    logger.info(f"Connected Clients: {client_count}")
 
 
 if __name__ == "__main__":
