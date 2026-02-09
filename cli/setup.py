@@ -66,7 +66,7 @@ def configure_hostapd(interface: str, ssid: str, country: str, passphrase: str):
     env["AP_INTERFACE"] = interface
     env["AP_SSID"] = ssid
     env["AP_COUNTRY"] = country
-    run_script("02-configure-hostapd.sh", env=env, stdin=passphrase)
+    run_script("02-configure-hostapd.sh", env=env, stdin=passphrase + "\n")
 
 
 def configure_dnsmasq(interface: str, gateway: str):
