@@ -92,6 +92,26 @@ def main():
 
     logger.info("")
 
+    # NAT Forwarding
+    logger.info("NAT Forwarding:")
+    result = subprocess.run(
+        ["sudo", "iptables", "-t", "nat", "-S", "POSTROUTING"],
+        capture_output=True, text=True
+    )
+    if result.returncode == 0:
+        wan_match = re.search(r'-o (\S+) -j MASQUERADE', result.stdout)
+        if wan_match:
+            wan_iface = wan_match.group(1)
+            wan_ip = get_interface_ip(wan_iface)
+            logger.info(f"  WAN interface: {wan_iface}")
+            logger.info(f"  WAN IP:        {wan_ip or 'not assigned'}")
+        else:
+            logger.info("  No MASQUERADE rule found")
+    else:
+        logger.info("  Could not read iptables rules")
+
+    logger.info("")
+
     # Clients
     client_count = get_connected_clients(interface)
     logger.info(f"Connected Clients: {client_count}")
