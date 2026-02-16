@@ -24,14 +24,21 @@ This adds `bin/pi-bridge` to your shell `PATH`.
 
 ## Setup
 
+1. Install dependencies/firmware:
+
+```bash
+pi-bridge install-deps
+```
+
+2. Reboot the Pi.
+
+3. Run AP setup:
+
 Interactive setup:
 
 ```bash
 pi-bridge setup
 ```
-
-On a fresh system, setup installs required packages/firmware first, then exits and asks for a reboot.  
-After reboot, run `pi-bridge setup` again to resume from step 2 automatically.
 
 Non-interactive setup with defaults:
 
@@ -50,6 +57,7 @@ pi-bridge stop
 pi-bridge restart
 pi-bridge clients
 pi-bridge logs
+pi-bridge install-deps
 pi-bridge forwarding list
 pi-bridge interface show
 pi-bridge interface switch wlan1 --wan eth0
