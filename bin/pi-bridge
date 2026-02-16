@@ -27,6 +27,7 @@ Commands:
   clients       List connected clients
   logs          View service logs (hostapd, dnsmasq)
   forwarding    Manage NAT forwarding interfaces
+  interface     Show or switch the AP interface
 """
     )
     parser.add_argument("command", nargs="?", help="Command to run")
@@ -68,6 +69,10 @@ Commands:
         from forwarding import main as forwarding_main
         sys.argv = ["pi-bridge forwarding"] + remaining
         forwarding_main()
+    elif args.command == "interface":
+        from interface import main as interface_main
+        sys.argv = ["pi-bridge interface"] + remaining
+        interface_main()
     elif args.command is None:
         parser.print_help()
     else:

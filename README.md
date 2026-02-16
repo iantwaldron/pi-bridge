@@ -51,6 +51,8 @@ pi-bridge restart
 pi-bridge clients
 pi-bridge logs
 pi-bridge forwarding list
+pi-bridge interface show
+pi-bridge interface switch wlan1 --wan eth0
 ```
 
 ## Notes
